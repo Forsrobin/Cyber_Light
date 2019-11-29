@@ -10,21 +10,27 @@ io.on('connection', function(socket){
   
     console.log("New client connected");
 
-
-
-
-
-
-    
+    // On Off
+    socket.on("getCurrentButtonValue", () => {
+        io.sockets.emit('getCurrentButtonValueFromMCU');
+    });
 
     socket.on("toggleOnOff", () => {
         console.log("Toggle");
         
         io.sockets.emit('toggleOnOff');
         
-        
     });
 
+    socket.on("isLedOn", (data) => {
+        
+       
+        io.sockets.emit('returnDataFromMCU', data);
+        
+    });
+    
+
+    // Slider
     socket.on("changeSlider", (data) => {        
         io.sockets.emit('changeSlider', data);
         console.log(data);

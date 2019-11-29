@@ -19,7 +19,7 @@ Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 ESP8266WiFiMulti WiFiMulti;
 SocketIoClient webSocket;
 
-bool ledIsOn = false;
+boolean isLedOn = false;
 uint32_t low = strip.Color(0, 0, 0); 
 
 int sliderValue = 255;
@@ -58,25 +58,35 @@ void setup() {
     webSocket.begin("192.168.1.213", 5000);
     webSocket.on("toggleOnOff", toggleOnOff);
     webSocket.on("changeSlider", changeSlider);
+    webSocket.on("getCurrentButtonValueFromMCU", getCurrentButtonValueFromMCU);
 
+}
+
+void getCurrentButtonValueFromMCU(const char * payload, size_t length) {
+  if (isLedOn == true) {
+    webSocket.emit("isLedOn", "1");
+  } else {
+    webSocket.emit("isLedOn", "0");
+  }
+   
 }
 
 void toggleOnOff(const char * payload, size_t length) {
   USE_SERIAL.printf("got message: %s\n", payload);
 
  
-    if (ledIsOn == false) {
+    if (isLedOn == false) {
         for( int i = 0; i<LED_COUNT; i++){
           strip.setPixelColor(i, high);
          }   
          strip.show();
-         ledIsOn = true;
+         isLedOn = true;
     } else  {
         for( int i = 0; i<LED_COUNT; i++){
           strip.setPixelColor(i, low);
         }   
         strip.show();
-        ledIsOn = false;
+        isLedOn = false;
     }
   
   

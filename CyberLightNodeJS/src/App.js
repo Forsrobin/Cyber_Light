@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {Component} from 'react';
 import logo from './logo.svg';
 import './App.css';
 
@@ -7,22 +7,67 @@ import SocketIOClient from 'socket.io-client';
 const socket = SocketIOClient();
 
 
-function toggleOnOff(e) {
-  e.preventDefault();
-  socket.emit("toggleOnOff");
+
+class ToggleLedButton extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      onOffButtonBoolean: 0,
+      onOffButtonText: 0,
+    };
+  }
+
+
+  convertButtonValue = (onOffButtonBoolean) => {
+      if (onOffButtonBoolean === 1) {
+        this.setState({ onOffButtonText: 'On' });
+      } else {
+        this.setState({ onOffButtonText: 'Off' });
+      }
+  }
+
+  getCurrentButtonValue = () => {
+    socket.emit("getCurrentButtonValue", (callbackData) => {      
+      this.setState({ onOffButtonBoolean: callbackData });
+      this.convertButtonValue(callbackData);
+    });
+
+    socket.on("returnDataFromMCU", (data) => {
+    
+        this.convertButtonValue(data);
+    });
+  }
+
+
+  componentDidMount() {
+    this.getCurrentButtonValue();
+  }
+
+  toggleOnOff = (e) => {
+    e.preventDefault();
+    
+    socket.emit("toggleOnOff");
+    this.getCurrentButtonValue();
+
+  }
+
+  render() {
+    return (
+      <div>
+        <button onClick={this.toggleOnOff}>{this.state.onOffButtonText}</button>
+      </div>
+    )
+  }
 }
 
-class App extends React.Component {
+
+
+class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
       sliderValue: 50,
     };
-  }
-
-
-  componentDidMount() {
-    
   }
 
   updateSlider = (e) => {
@@ -35,7 +80,7 @@ class App extends React.Component {
     return (
       <div className="App">
         <h1>{this.state.sliderValue}</h1>
-        <button onClick={toggleOnOff}>Toggle</button>
+        <ToggleLedButton />
         <input type="range" min="1" max="255"  id="myRange" onChange={this.updateSlider}/>
       </div>
     );
