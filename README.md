@@ -14,3 +14,15 @@ The main hub is the core server wich have the node.js server and hosts the app/w
 
 # Installation
 
+````
+Windows
+````
+
+1: Go to https://www.cyberlight.se/download and download the latest version
+
+````
+Mac
+````
+
+````
+Linux
