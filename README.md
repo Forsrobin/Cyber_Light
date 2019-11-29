@@ -17,12 +17,14 @@ The main hub is the core server wich have the node.js server and hosts the app/w
 ````
 Windows
 ````
-
 1: Go to https://www.cyberlight.se/download and download the latest version
 
 ````
 Mac
 ````
+1: Clone https://hithub.com/forsrobin/cyberlight/somethig to a foler of your choice
 
 ````
 Linux
+````
+1: Clone https://hithub.com/forsrobin/cyberlight/somethig to a foler of your choice
