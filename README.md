@@ -1,4 +1,4 @@
-# Cyber_Light
+# CyberLight
 
 # About
 
@@ -10,7 +10,7 @@ Once you have some products connected to the hub you will be able to controll th
 
 CyberLight is powerd by node.js with react and the communication is through sockets wich give a fast an reliable connection with your products
 
-The main hub is the core server wich have the node.js server and hosts the app/webbserver where all the user communication tith the devices will happen.
+The main hub is the core server which have the node.js server and hosts the app/webbserver where all the user communication tith the devices will happen.
 
 # Installation
 
@@ -22,9 +22,9 @@ Windows
 ````
 Mac
 ````
-1: Clone https://hithub.com/forsrobin/cyberlight/somethig to a foler of your choice
+1: Clone https://github.com/forsrobin/cyberlight/something to a folder of your choice
 
 ````
 Linux
 ````
-1: Clone https://hithub.com/forsrobin/cyberlight/somethig to a foler of your choice
+1: Clone https://github.com/forsrobin/cyberlight/something to a folder of your choice
