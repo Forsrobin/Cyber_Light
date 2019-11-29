@@ -30,6 +30,7 @@ int user = 1;
 
 int brightness = 255;
 
+String hex_color;
 int r = 255;
 int g = 255;
 int b = 255;
@@ -78,7 +79,16 @@ void setup() {
     webSocket.on("getCurrentButtonValueFromMCU", getCurrentButtonValueFromMCU);
     webSocket.on("getCurrentSliderValueFromMCU", getCurrentSliderValueFromMCU);
     webSocket.on("changeColor", changeColor);
+    webSocket.on("getColorArduino", getColorValue);
 
+}
+
+void getColorValue(const char * payload, size_t length) {
+
+    Serial.print(hex_color);
+  
+    int test = 1000;
+    webSocket.emit("getColor", ("\""+String(hex_color)+"\" ").c_str() );
 }
 
 void getCurrentButtonValueFromMCU(const char * payload, size_t length) {
@@ -94,6 +104,8 @@ void changeColor(const char * payload, size_t length) {
 
     Serial.print(payload);
 
+    hex_color = "#" + String(payload);
+    
     long number = (long) strtol( &payload[0], NULL, 16);
     r = number >> 16;
     g = number >> 8 & 0xFF;

@@ -60,6 +60,15 @@ io.on('connection', function(socket){
     });
 
 
+    socket.on("getColorArduinoCall", (data) => {
+        io.sockets.emit('getColorArduino');
+    });
+
+    //Get the slider values
+    socket.on("getColor", (data) => {
+        io.sockets.emit('returnColorData', data);
+    });
+
 
 
 
