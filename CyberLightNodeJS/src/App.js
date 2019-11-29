@@ -4,8 +4,42 @@ import './App.css';
 
 
 import SocketIOClient from 'socket.io-client';
+import { log } from 'util';
 const socket = SocketIOClient();
 
+class ChangeColor extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      currentColor: "#333333",
+    };
+  }
+
+  getCurrentColor = () => {
+    console.log("dsaads");
+  };
+
+  changeColor = (e) => {
+
+    var color = e.target.value;
+    color = color.substr(1);
+    socket.emit("changeColor", color);
+    this.getCurrentColor();
+
+  }
+
+  componentDidMount() {
+    this.getCurrentColor();
+  }
+
+  render() {
+    return (
+      <div>
+        <input type="color" onChange={this.changeColor}></input>
+      </div>
+    )
+  }
+}
 
 
 class ToggleLedButton extends Component {
@@ -13,7 +47,7 @@ class ToggleLedButton extends Component {
     super(props);
     this.state = {
       onOffButtonBoolean: 0,
-      onOffButtonText: 0,
+      onOffButtonText: "Searching...",
     };
   }
 
@@ -33,8 +67,7 @@ class ToggleLedButton extends Component {
     });
 
     socket.on("returnDataFromMCU", (data) => {
-    
-        this.convertButtonValue(data);
+      this.convertButtonValue(data);
     });
   }
 
@@ -60,28 +93,72 @@ class ToggleLedButton extends Component {
   }
 }
 
+class Slider extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      sliderValue : "",
+    };
+  }
 
+  getCurrentSliderValue = () => {
+    socket.emit("getCurrentSliderValue", (callbackData) => {      
+      this.setState({ sliderValue: callbackData });
+      this.convertSliderValue(callbackData);
+    });
+
+    socket.on("returnSliderDataFromMCU", (data) => {
+      this.convertSliderValue(data);
+    });
+  }
+
+  convertSliderValue = (slidVal) => {
+      this.setState({ sliderValue: slidVal });
+  }
+
+  componentDidMount() {
+    this.getCurrentSliderValue();
+  }
+
+  updateSlider = (e) => {
+
+    e.preventDefault();
+    socket.emit("changeSlider", {sliderValue: e.target.value} ); //Update ljusstyrkan på ardiono
+    this.getCurrentSliderValue(); //Updatera värden på alla sockets
+
+  }
+
+  render() {
+    return (
+      <div>
+        <h1>{this.state.sliderValue}</h1>
+        <input type="range" min="20" max="255"  value={this.state.sliderValue} id="myRange" onChange={this.updateSlider}/>
+      </div>
+    );
+  }
+}
 
 class App extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      sliderValue: 50,
+      
     };
   }
-
-  updateSlider = (e) => {
-    this.setState({ sliderValue: e.target.value });
-    socket.emit("changeSlider", {sliderValue: e.target.value} );
-  }
- 
 
   render() {
     return (
       <div className="App">
-        <h1>{this.state.sliderValue}</h1>
         <ToggleLedButton />
-        <input type="range" min="1" max="255"  id="myRange" onChange={this.updateSlider}/>
+        <Slider />
+        <ChangeColor />
+        <ul>
+          <li>
+            <button>Rave</button>
+            <button>Rainbow</button>
+            <button>Static</button>
+          </li>
+        </ul>
       </div>
     );
   }

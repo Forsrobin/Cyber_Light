@@ -10,41 +10,64 @@ io.on('connection', function(socket){
   
     console.log("New client connected");
 
+
+
+
+
+    // ====Button functions==== //
     // On Off
     socket.on("getCurrentButtonValue", () => {
         io.sockets.emit('getCurrentButtonValueFromMCU');
     });
 
+    //Toggle on of
     socket.on("toggleOnOff", () => {
         console.log("Toggle");
-        
         io.sockets.emit('toggleOnOff');
-        
     });
 
+    //IS led on
     socket.on("isLedOn", (data) => {
-        
-       
         io.sockets.emit('returnDataFromMCU', data);
-        
     });
     
 
-    // Slider
-    socket.on("changeSlider", (data) => {        
-        io.sockets.emit('changeSlider', data);
-        console.log(data);
+
+
+
+    // ====Slider functions==== //
+    // Current slider value
+    socket.on("getCurrentSliderValue", () => {
+        io.sockets.emit('getCurrentSliderValueFromMCU');
     });
+
+    //Get the slider values
+    socket.on("getSlideValue", (data) => {
+        io.sockets.emit('returnSliderDataFromMCU', data);
+    });
+
+    // Slider
+    socket.on("changeSlider", (data) => {   
+        console.log(data);     
+        io.sockets.emit('changeSlider', data);
+    });
+
+
+    // =====Change color==== //
+    socket.on("changeColor", (data) => {   
+        console.log(data);     
+        io.sockets.emit('changeColor', data);
+    });
+
+
 
 
 
     //On disconnect
     socket.on('disconnect', function () {
-
         console.log("Client disconnected");
-        
-        
     });
+
 });
 
 process.on('uncaughtException', function (err) {

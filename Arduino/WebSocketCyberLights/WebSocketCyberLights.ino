@@ -25,9 +25,18 @@ uint32_t low = strip.Color(0, 0, 0);
 int sliderValue = 255;
 uint32_t high = strip.Color(sliderValue, sliderValue, sliderValue);
 
+//Välj användare Thun = [0], Fors = [1]
+int user = 1;
+
+int brightness = 255;
+
+int r = 255;
+int g = 255;
+int b = 255;
 
 void setup() {
     strip.begin();
+    strip.setBrightness(brightness);
     strip.show(); // Initialize all pixels to 'off'
     
   
@@ -46,19 +55,29 @@ void setup() {
           delay(1000);
       }
 
-    WiFiMulti.addAP("Thunberg", "jonte2000");
+    
+    if(user == 0) {
+      WiFiMulti.addAP("Thunberg", "jonte2000");
+    } else {
+      WiFiMulti.addAP("Rosenborg");
+    }
 
     while(WiFiMulti.run() != WL_CONNECTED) {
-        
         delay(100);
     }
     USE_SERIAL.println("Connected");
 
+    if(user == 0) {
+      webSocket.begin("192.168.1.213", 5000);
+    } else {
+      webSocket.begin("192.168.1.132", 5000);
+    }
     
-    webSocket.begin("192.168.1.213", 5000);
     webSocket.on("toggleOnOff", toggleOnOff);
     webSocket.on("changeSlider", changeSlider);
     webSocket.on("getCurrentButtonValueFromMCU", getCurrentButtonValueFromMCU);
+    webSocket.on("getCurrentSliderValueFromMCU", getCurrentSliderValueFromMCU);
+    webSocket.on("changeColor", changeColor);
 
 }
 
@@ -71,13 +90,38 @@ void getCurrentButtonValueFromMCU(const char * payload, size_t length) {
    
 }
 
-void toggleOnOff(const char * payload, size_t length) {
-  USE_SERIAL.printf("got message: %s\n", payload);
+void changeColor(const char * payload, size_t length) {
 
- 
+    Serial.print(payload);
+
+    long number = (long) strtol( &payload[0], NULL, 16);
+    r = number >> 16;
+    g = number >> 8 & 0xFF;
+    b = number & 0xFF;
+
+    Serial.print("red is ");
+    Serial.println(r);
+    Serial.print("green is ");
+    Serial.println(g);
+    Serial.print("blue is ");
+    Serial.println(b);
+    
+    for( int i = 0; i<LED_COUNT; i++){
+      strip.setPixelColor(i, (r), (g), (b));
+    }   
+    strip.show();
+}
+
+void getCurrentSliderValueFromMCU(const char * payload, size_t length) {
+    USE_SERIAL.println(brightness);
+    webSocket.emit("getSlideValue",  ("\""+String(brightness)+"\" ").c_str() );
+}
+
+void toggleOnOff(const char * payload, size_t length) {
+
     if (isLedOn == false) {
         for( int i = 0; i<LED_COUNT; i++){
-          strip.setPixelColor(i, high);
+          strip.setPixelColor(i, (r), (g), (b));
          }   
          strip.show();
          isLedOn = true;
@@ -103,20 +147,14 @@ void changeSlider(const char * payload, size_t length) {
     StaticJsonDocument<256> doc;
     deserializeJson(doc, payload, length);
     
-    int brightness = doc["sliderValue"];
+    brightness = doc["sliderValue"];
 
     
     
-     USE_SERIAL.println(brightness);
+    USE_SERIAL.println(brightness);
+    strip.setBrightness(brightness);
+    strip.show();
 
-    high = strip.Color(brightness, brightness, brightness);
- 
-
-    for( int i = 0; i<LED_COUNT; i++){
-          strip.setPixelColor(i, high);
-        }   
-        strip.show();
-  
 }
 
 void loop() {
