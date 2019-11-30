@@ -1,17 +1,52 @@
-
-
+@import url('https://fonts.googleapis.com/css?family=Montserrat&display=swap');
 .wrapperDevices {
     display: flex;
     width: 50%;
     margin: auto;
     position: relative;
-    background: #444;
 }
 
 
 .deviceFragment {
     background: cyan;
-    margin: auto;
+    margin: 20px auto;
     padding: 0 20px;
     padding-bottom: 20px;
+    text-align: center;
+    border-radius: 10px;
 }
+
+.deviceFragment .title {
+    font-weight: lighter;
+    font-family: 'Montserrat', sans-serif;
+    margin-bottom: 0;
+    
+}
+
+.deviceFragment .ip {
+    color: black;
+    font-size: 9pt;
+    margin-top: 2px;
+}
+
+
+.modesWrapper {
+    margin: 10px 0;
+    display: flex;
+}
+
+.modesWrapper button {
+    margin: auto;
+    padding: 10px 20px;
+    border: none;
+    background: white;
+    border-radius: 3px;
+}
+
+.modesWrapper button:last-child {
+    margin-right: 0;
+}
+.modesWrapper button:first-child {
+    margin-left: 0;
+}
+

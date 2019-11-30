@@ -6,6 +6,7 @@
 #include <SocketIoClient.h>
 #include <ArduinoJson.h>
 
+
 #define USE_SERIAL Serial
 
 #define LED_PIN    5
@@ -19,25 +20,25 @@ Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
 ESP8266WiFiMulti WiFiMulti;
 SocketIoClient webSocket;
 
-boolean isLedOn = false;
+boolean isLedOn = true;
 uint32_t low = strip.Color(0, 0, 0); 
 
 int sliderValue = 255;
 uint32_t high = strip.Color(sliderValue, sliderValue, sliderValue);
 
 //Välj användare Thun = [0], Fors = [1]
-int user = 1;
+int user = 0;
 
-int brightness = 255;
 
-String hex_color;
-int r = 255;
-int g = 255;
-int b = 255;
+//INKLUDERA VÅRA FUNKTIONER
+#include "functionsCyberLight.h"
 
 void setup() {
     strip.begin();
     strip.setBrightness(brightness);
+    for( int i = 0; i<LED_COUNT; i++){
+      strip.setPixelColor(i, (r), (g), (b));
+    }       
     strip.show(); // Initialize all pixels to 'off'
     
   
@@ -67,11 +68,10 @@ void setup() {
         delay(100);
     }
 
-
     if(user == 0) {
       webSocket.begin("192.168.1.213", 5000);
     } else {
-      webSocket.begin("192.168.1.132" , 5000);
+      webSocket.begin("192.168.1.132", 5000);
     }
 
   
@@ -80,33 +80,56 @@ void setup() {
     webSocket.on("storeDeviceInfoGet", storeDeviceInfoGet);
      
     //Button
-    webSocket.on("serverToDeviceButton", toggleOnOff);
+    webSocket.on("serverToDeviceButton", serverToDeviceButton);
     webSocket.on("getCurrentButtonValueFromDevice", getCurrentButtonValueFromDevice);
 
     //Slider
     webSocket.on("serverToDeviceSlider", serverToDeviceSlider);
+    webSocket.on("getCurrentSliderValueFromDevice", getCurrentSliderValueFromDevice);
 
     //Color
     webSocket.on("changeColor", changeColor);
     webSocket.on("getColorArduino", getColorValue);
+
+    webSocket.on("useFunction", getLightDisplayFunction);
     
-
-
-    
-
 }
-
 
 //DeviceInfo
 void storeDeviceInfoGet(const char * payload, size_t length) {
-    String test = WiFi.localIP().toString();
-    webSocket.emit("storeDeviceInfo", ("{\"deviceType\":\"01\", \"customId\":\"01\", \"name\":\"CyberCoo\", \"ip\":\""+test+"\"}").c_str());
+    String ipString = WiFi.localIP().toString();
+    webSocket.emit("storeDeviceInfo", ("{\"deviceType\":\"01\", \"customId\":\"01\", \"name\":\"CyberCoo\", \"ip\":\""+ipString+"\"}").c_str());
 }
 
 
-//Button 
-void toggleOnOff(const char * payload, size_t length) {
+//Get display funktion
+void getLightDisplayFunction(const char * payload, size_t length) {
 
+    //Ta ut alla argument
+    StaticJsonDocument<256> doc;
+    deserializeJson(doc, payload, length);
+    
+    switch (doc["function"]) {
+      case "static":
+        // statements
+        staticLight(doc["data"]);
+        
+        break;
+      case "rave":
+        // statements
+        break;
+      default:
+        // statements
+      break;
+    }
+        
+}
+
+//Button 
+void serverToDeviceButton(const char * payload, size_t length) {
+
+
+   
     if (isLedOn == false) {
         for( int i = 0; i<LED_COUNT; i++){
           strip.setPixelColor(i, (r), (g), (b));
@@ -124,9 +147,9 @@ void toggleOnOff(const char * payload, size_t length) {
 
 void getCurrentButtonValueFromDevice(const char * payload, size_t length) {
   if (isLedOn == true) {
-    webSocket.emit("isLedOn", "1");
+    webSocket.emit("deviceToServerButton", "1");
   } else {
-    webSocket.emit("isLedOn", "0");
+    webSocket.emit("deviceToServerButton", "0");
   }
    
 }
@@ -137,7 +160,7 @@ void serverToDeviceSlider(const char * payload, size_t length) {
 
     changeSlider(payload, length);
     USE_SERIAL.println(brightness);
-    webSocket.emit("deviceToServerSlider",  ("\""+String(brightness)+"\" ").c_str() );
+    webSocket.emit("deviceToServerSlider",  ("\""+String(brightness)+"\" ").c_str());
 }
 
 
@@ -152,37 +175,22 @@ void changeSlider(const char * payload, size_t length) {
     strip.show();
 }
 
+void getCurrentSliderValueFromDevice(const char * payload, size_t length) {
+    webSocket.emit("deviceToServerSlider", ("\""+String(brightness)+"\" ").c_str());
+}
+
 
 //Color
 void getColorValue(const char * payload, size_t length) {
     Serial.print(hex_color);
   
-    int test = 1000;
     webSocket.emit("getColor", ("\""+String(hex_color)+"\" ").c_str() );
 }
 
 void changeColor(const char * payload, size_t length) {
 
-    Serial.print(payload);
-
-    hex_color = "#" + String(payload);
+    staticLight(payload);
     
-    long number = (long) strtol( &payload[0], NULL, 16);
-    r = number >> 16;
-    g = number >> 8 & 0xFF;
-    b = number & 0xFF;
-
-    Serial.print("red is ");
-    Serial.println(r);
-    Serial.print("green is ");
-    Serial.println(g);
-    Serial.print("blue is ");
-    Serial.println(b);
-    
-    for( int i = 0; i<LED_COUNT; i++){
-      strip.setPixelColor(i, (r), (g), (b));
-    }   
-    strip.show();
 }
 
 //Loop

@@ -4,13 +4,15 @@ var io = require('socket.io').listen(server);
 
 
 var devices = [];
-
+var socketList = [];
 
 io.on('connection', function(socket){
   
-    console.log("New client connected");
+    socketList.push(socket);
 
     io.sockets.emit('storeDeviceInfoGet');
+
+    
     
     socket.on('storeDeviceInfo', function (data) {
 
@@ -26,6 +28,9 @@ io.on('connection', function(socket){
             deviceInfo.ip = data.ip;
             devices.push(deviceInfo);
 
+            console.log(data.name+" connected");
+            
+
             pushDevicesToAllDevices();
 
         };
@@ -34,6 +39,7 @@ io.on('connection', function(socket){
 
     socket.on('getConnectedDevices', (callback) => {
         callback(devices);
+        
     });
 
 
@@ -44,17 +50,16 @@ io.on('connection', function(socket){
     }
     
 
-
     // ====ToggleLedButton functions==== //
 
-    //Toggle on off
+    //Client to device button
     socket.on("clientToServerButton", () => {
         io.sockets.emit('serverToDeviceButton');
     });
 
-    //Is led on
-    socket.on("isLedOn", (data) => {
-        io.sockets.emit('returnDataFromDevice', data);
+    //Device to client button
+    socket.on("deviceToServerButton", (data) => {        
+        io.sockets.emit('serverToClientButton', data);
     });
     
     // Get current
@@ -65,7 +70,7 @@ io.on('connection', function(socket){
 
 
     // ====Slider functions==== //
-    
+
     // Client to Device
     socket.on("clientToServerSlider", (data) => {   
         socket.broadcast.emit('serverToDeviceSlider', data);
@@ -79,19 +84,18 @@ io.on('connection', function(socket){
 
     // Device to client
     socket.on("getCurrentSliderValue", (data) => {
-        socket.broadcast.emit('serverToClientsSlider', data);
+        socket.broadcast.emit('getCurrentSliderValueFromDevice', data);
     });
 
 
 
 
     // =====Change color==== //
-    socket.on("changeColor", (data) => {   
-        console.log(data);     
+    socket.on("changeColor", (data) => {      
         io.sockets.emit('changeColor', data);
     });
 
-    socket.on("getColorArduinoCall", (data) => {
+    socket.on("getColorArduinoCall", () => {
         io.sockets.emit('getColorArduino');
     });
 
@@ -104,13 +108,16 @@ io.on('connection', function(socket){
 
     //On disconnect
     socket.on('disconnect', function () {
-        console.log("Client disconnected");
+     
 
         for( var i=0, len=devices.length; i<len; ++i ){
             var c = devices[i];
 
             if(c.socketId == socket.id){
+                console.log(devices[i].name+" diconnected");
+                
                 devices.splice(i,1);
+                socketList.splice(i,1);
                 break;
             }
         }

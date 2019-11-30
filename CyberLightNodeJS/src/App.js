@@ -1,23 +1,22 @@
 import React, {Component} from 'react';
-import logo from './logo.svg';
 import './App.css';
-
+import { HuePicker    } from 'react-color';
 
 import SocketIOClient from 'socket.io-client';
-import { log } from 'util';
+
 const socket = SocketIOClient();
 
 class ChangeColor extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      currentColor: "#aaaaaa",
+      currentColor: "#ffffff",
     };
   }
 
-  changeColor = (e) => {
+  changeColor = (color) => {
 
-    var color = e.target.value;
+    var color = color.hex;
     color = color.substr(1);
 
     socket.emit("changeColor", color);
@@ -31,11 +30,7 @@ class ChangeColor extends Component {
 
   updateInputColor = () => {
 
-    socket.emit("getColorArduinoCall", (callbackData) => {
-      console.log("Hello");
-      this.setState({ currentColor: callbackData });
-      this.setColor(callbackData);
-    });
+    socket.emit("getColorArduinoCall");
 
     socket.on("returnColorData", (data) => {
       this.setColor(data);
@@ -50,7 +45,7 @@ class ChangeColor extends Component {
   render() {
     return (
       <div>
-        <input type="color" value={this.state.currentColor} onChange={this.changeColor}></input>
+        <HuePicker color={this.state.currentColor} onChange={this.changeColor} />
       </div>
     )
   }
@@ -76,18 +71,19 @@ class ToggleLedButton extends Component {
   }
 
   getCurrentButtonValue = () => {
- 
     
     socket.emit("getCurrentButtonValue");
 
-    socket.on("returnDataFromDevice", (data) => {
-      this.convertButtonValue(data);
-    });
+   
   }
 
 
   componentDidMount() {
     this.getCurrentButtonValue();
+
+    socket.on("serverToClientButton", (data) => {
+      this.convertButtonValue(data);
+    });
   }
 
   toggleOnOff = (e) => {
@@ -116,9 +112,7 @@ class Slider extends Component {
   }
 
   getCurrentSliderValue = () => {
-    socket.emit("startUp", (callbackData) => {      
-      this.setState({ sliderValue: callbackData });
-    });
+    socket.emit("getCurrentSliderValue");
   }
 
   
@@ -141,7 +135,6 @@ class Slider extends Component {
   render() {
     return (
       <div>
-        <h3>{this.state.sliderValue}</h3>
         <input type="range" min="20" max="255" value={this.state.sliderValue} id="myRange" onChange={this.updateSlider}/>
       </div>
     );
@@ -158,7 +151,7 @@ class Modes extends Component {
 
   render() {
     return (
-      <div>
+      <div className="modesWrapper">
             <button>Rave</button>
             <button>Rainbow</button>
             <button>Static</button>
@@ -166,6 +159,33 @@ class Modes extends Component {
     );
   }
 }
+
+
+class DeviceFragment extends Component {
+  constructor(props) {
+    super(props);
+    this.state = {
+      
+    };
+  }
+
+  render() {
+    return (
+      <div className="deviceFragment">
+        <h2 className="title">{this.props.deviceObject.name}</h2>
+        <p className="ip">{this.props.deviceObject.ip}</p>
+        <div className="controllButtons">
+          <ToggleLedButton socketId={this.props.deviceObject.socketId} />
+          <Slider socketId={this.props.deviceObject.socketId} />
+          <Modes socketId={this.props.deviceObject.socketId} />
+          <ChangeColor socketId={this.props.deviceObject.socketId} />
+          
+        </div>
+      </div>
+    );
+  }
+}
+
 
 
 class DeviceList extends Component {
@@ -194,35 +214,13 @@ class DeviceList extends Component {
           {this.state.devices.map((device, idx) => {
             return (<DeviceFragment key={idx} deviceObject={device} />)
           })}
+
       </div>
     );
   }
 }
 
 
-class DeviceFragment extends Component {
-  constructor(props) {
-    super(props);
-    this.state = {
-      
-    };
-  }
-
-  render() {
-    return (
-      <div className="deviceFragment">
-        <h2>{this.props.deviceObject.name}</h2>
-        <h4>{this.props.deviceObject.ip}</h4>
-        <div className="controllButtons">
-          <ToggleLedButton socketId={this.props.deviceObject.socketId} />
-          <Slider socketId={this.props.deviceObject.socketId} />
-          <ChangeColor socketId={this.props.deviceObject.socketId} />
-          <Modes socketId={this.props.deviceObject.socketId} />
-        </div>
-      </div>
-    );
-  }
-}
 
 
 
