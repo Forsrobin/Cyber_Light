@@ -13,9 +13,12 @@ int r = 255;
 int g = 255;
 int b = 255;
 
-void staticLight(const char * color) {
+void changeColor(const char * data) {
+
+    StaticJsonDocument<256> doc;
+    deserializeJson(doc, data, length);
   
-    hex_color = "#" + String(color);
+    hex_color = "#" + String(doc["color"]);
     
     long number = (long) strtol( &color[0], NULL, 16);
     r = number >> 16;
@@ -26,6 +29,10 @@ void staticLight(const char * color) {
       strip.setPixelColor(i, (r), (g), (b));
     }   
     strip.show();
+}
+
+void toggleLight() {
+  
 }
 
 #endif // _FUNCTIONSCYBERLIGHT_H    // Put this line at the end of your file.

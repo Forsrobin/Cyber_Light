@@ -19,7 +19,14 @@ class ChangeColor extends Component {
     var color = color.hex;
     color = color.substr(1);
 
-    socket.emit("changeColor", color);
+    var data = {
+      function: "changeColor",
+      dataObject: {
+        color: color.hex,
+      }
+    }
+
+    socket.emit("useFunctionFromClient", data);
     this.updateInputColor();
 
   }

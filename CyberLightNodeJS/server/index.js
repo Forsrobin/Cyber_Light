@@ -91,17 +91,11 @@ io.on('connection', function(socket){
 
 
     // =====Change color==== //
-    socket.on("changeColor", (data) => {      
-        io.sockets.emit('changeColor', data);
+    socket.on("useFunctionFromClient", (data) => {      
+        io.sockets.emit('useFunction', data);
     });
 
-    socket.on("getColorArduinoCall", () => {
-        io.sockets.emit('getColorArduino');
-    });
 
-    socket.on("getColor", (data) => {
-        io.sockets.emit('returnColorData', data);
-    });
 
 
 
