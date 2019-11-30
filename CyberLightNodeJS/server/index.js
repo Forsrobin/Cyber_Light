@@ -46,15 +46,10 @@ io.on('connection', function(socket){
 
 
     // ====ToggleLedButton functions==== //
-    // On Off
-    socket.on("getCurrentButtonValue", () => {
-        io.sockets.emit('getCurrentButtonValueFromDevice');
-    });
 
     //Toggle on off
-    socket.on("toggleOnOff", () => {
-        io.sockets.emit('toggleOnOff');
-
+    socket.on("clientToServerButton", () => {
+        io.sockets.emit('serverToDeviceButton');
     });
 
     //Is led on
@@ -62,12 +57,15 @@ io.on('connection', function(socket){
         io.sockets.emit('returnDataFromDevice', data);
     });
     
-
+    // Get current
+    socket.on("getCurrentButtonValue", () => {
+        io.sockets.emit('getCurrentButtonValueFromDevice');
+    });
 
 
 
     // ====Slider functions==== //
-
+    
     // Client to Device
     socket.on("clientToServerSlider", (data) => {   
         socket.broadcast.emit('serverToDeviceSlider', data);
@@ -79,6 +77,10 @@ io.on('connection', function(socket){
         socket.broadcast.emit('serverToClientsSlider', data);
     });
 
+    // Device to client
+    socket.on("getCurrentSliderValue", (data) => {
+        socket.broadcast.emit('serverToClientsSlider', data);
+    });
 
 
 
