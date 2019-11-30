@@ -26,7 +26,7 @@ int sliderValue = 255;
 uint32_t high = strip.Color(sliderValue, sliderValue, sliderValue);
 
 //Välj användare Thun = [0], Fors = [1]
-int user = 1;
+int user = 0;
 
 int brightness = 255;
 
@@ -66,38 +66,98 @@ void setup() {
     while(WiFiMulti.run() != WL_CONNECTED) {
         delay(100);
     }
-    USE_SERIAL.println("Connected");
 
     if(user == 0) {
       webSocket.begin("192.168.1.213", 5000);
     } else {
       webSocket.begin("192.168.1.132", 5000);
     }
-    
+
+  
+
+    //DeviceInfo
+    webSocket.on("storeDeviceInfoGet", storeDeviceInfoGet);
+     
+    //Button
     webSocket.on("toggleOnOff", toggleOnOff);
-    webSocket.on("changeSlider", changeSlider);
-    webSocket.on("getCurrentButtonValueFromMCU", getCurrentButtonValueFromMCU);
-    webSocket.on("getCurrentSliderValueFromMCU", getCurrentSliderValueFromMCU);
+    webSocket.on("getCurrentButtonValueFromDevice", getCurrentButtonValueFromDevice);
+
+    //Slider
+    webSocket.on("serverToDeviceSlider", serverToDeviceSlider);
+
+    //Color
     webSocket.on("changeColor", changeColor);
     webSocket.on("getColorArduino", getColorValue);
+    
+
+
+    
 
 }
 
-void getColorValue(const char * payload, size_t length) {
 
-    Serial.print(hex_color);
-  
-    int test = 1000;
-    webSocket.emit("getColor", ("\""+String(hex_color)+"\" ").c_str() );
+//DeviceInfo
+void storeDeviceInfoGet(const char * payload, size_t length) {
+    String test = WiFi.localIP().toString();
+    webSocket.emit("storeDeviceInfo", ("{\"deviceType\":\"01\", \"customId\":\"01\", \"name\":\"CyberCoo\", \"ip\":\""+test+"\"}").c_str());
 }
 
-void getCurrentButtonValueFromMCU(const char * payload, size_t length) {
+
+//Button 
+void toggleOnOff(const char * payload, size_t length) {
+
+    if (isLedOn == false) {
+        for( int i = 0; i<LED_COUNT; i++){
+          strip.setPixelColor(i, (r), (g), (b));
+         }   
+         strip.show();
+         isLedOn = true;
+    } else  {
+        for( int i = 0; i<LED_COUNT; i++){
+          strip.setPixelColor(i, low);
+        }   
+        strip.show();
+        isLedOn = false;
+    }
+}
+
+void getCurrentButtonValueFromDevice(const char * payload, size_t length) {
   if (isLedOn == true) {
     webSocket.emit("isLedOn", "1");
   } else {
     webSocket.emit("isLedOn", "0");
   }
    
+}
+
+
+//Slider
+void serverToDeviceSlider(const char * payload, size_t length) {
+
+    changeSlider(payload, length);
+    USE_SERIAL.println(brightness);
+    webSocket.emit("deviceToServerSlider",  ("\""+String(brightness)+"\" ").c_str() );
+}
+
+
+void changeSlider(const char * payload, size_t length) {
+    StaticJsonDocument<256> doc;
+    deserializeJson(doc, payload, length);
+    
+    brightness = doc["sliderValue"];
+    
+    USE_SERIAL.println(brightness);
+    strip.setBrightness(brightness);
+    strip.show();
+}
+
+
+//Color
+void getColorValue(const char * payload, size_t length) {
+    Serial.print(hex_color);
+  
+    int test = 1000;
+    webSocket.emit("getColor", ("\""+String(hex_color)+"\" ").c_str() );
 }
 
 void changeColor(const char * payload, size_t length) {
@@ -124,51 +184,7 @@ void changeColor(const char * payload, size_t length) {
     strip.show();
 }
 
-void getCurrentSliderValueFromMCU(const char * payload, size_t length) {
-    USE_SERIAL.println(brightness);
-    webSocket.emit("getSlideValue",  ("\""+String(brightness)+"\" ").c_str() );
-}
-
-void toggleOnOff(const char * payload, size_t length) {
-
-    if (isLedOn == false) {
-        for( int i = 0; i<LED_COUNT; i++){
-          strip.setPixelColor(i, (r), (g), (b));
-         }   
-         strip.show();
-         isLedOn = true;
-    } else  {
-        for( int i = 0; i<LED_COUNT; i++){
-          strip.setPixelColor(i, low);
-        }   
-        strip.show();
-        isLedOn = false;
-    }
-  
-  
-   
- 
-}
-
-void changeSlider(const char * payload, size_t length) {
-
-
-    USE_SERIAL.printf(payload);
-    USE_SERIAL.println();
-
-    StaticJsonDocument<256> doc;
-    deserializeJson(doc, payload, length);
-    
-    brightness = doc["sliderValue"];
-
-    
-    
-    USE_SERIAL.println(brightness);
-    strip.setBrightness(brightness);
-    strip.show();
-
-}
-
+//Loop
 void loop() {
     webSocket.loop();
 }
