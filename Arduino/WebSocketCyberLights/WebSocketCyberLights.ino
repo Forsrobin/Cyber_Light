@@ -26,7 +26,7 @@ int sliderValue = 255;
 uint32_t high = strip.Color(sliderValue, sliderValue, sliderValue);
 
 //Välj användare Thun = [0], Fors = [1]
-int user = 0;
+int user = 1;
 
 int brightness = 255;
 
@@ -67,10 +67,11 @@ void setup() {
         delay(100);
     }
 
+
     if(user == 0) {
       webSocket.begin("192.168.1.213", 5000);
     } else {
-      webSocket.begin("192.168.1.132", 5000);
+      webSocket.begin("192.168.1.132" , 5000);
     }
 
   
@@ -79,7 +80,7 @@ void setup() {
     webSocket.on("storeDeviceInfoGet", storeDeviceInfoGet);
      
     //Button
-    webSocket.on("toggleOnOff", toggleOnOff);
+    webSocket.on("serverToDeviceButton", toggleOnOff);
     webSocket.on("getCurrentButtonValueFromDevice", getCurrentButtonValueFromDevice);
 
     //Slider

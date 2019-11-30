@@ -93,7 +93,7 @@ class ToggleLedButton extends Component {
   toggleOnOff = (e) => {
     e.preventDefault();
     
-    socket.emit("toggleOnOff");
+    socket.emit("clientToServerButton");
     this.getCurrentButtonValue();
 
   }
