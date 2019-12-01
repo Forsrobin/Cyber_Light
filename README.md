@@ -14,6 +14,7 @@ The main hub is the core server which have the node.js server and hosts the app/
 
 # Modules
 
+You can use different modules with your device and here are the different modules iwth it's different data types it supports.
 ````
 <Color />
 
