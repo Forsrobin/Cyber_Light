@@ -15,7 +15,7 @@ The main hub is the core server which have the node.js server and hosts the app/
 # Modules
 
 ````
-<Color>
+#<Color>
 
 Data = {
   color: ff0000, (What color you want in hex-format)
