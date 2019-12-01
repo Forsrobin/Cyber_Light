@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import './App.css';
-import { HuePicker    } from 'react-color';
+import { CirclePicker    } from 'react-color';
 
 import SocketIOClient from 'socket.io-client';
 
@@ -49,8 +49,13 @@ class Color extends Component {
 
   render() {
     return (
-      <div>
-        <HuePicker color={this.state.currentColor} onChange={this.changeColor} />
+      <div style={{ width: "100%", display: "inline-flex"}}>
+        <CirclePicker color={this.state.currentColor} width="294px" colors={
+        [
+        "#A800FF", "#60019D" , "#0000FF", "#00FF00", "#FFEF00", "#FF7F00", "#FF0000", 
+        "#FFFFFF", "#FFFFDB", "#FFFFC3", "#FEFFAE", "#FEFFA5", "#efd288", "#e0ba69"
+        ]
+        }  onChange={this.changeColor} />
       </div>
     )
   }
@@ -178,6 +183,14 @@ class Modes extends Component {
 
   }
 
+  raveMode = () => {
+    
+    var data = {speed: 10};
+    socket.emit("useFunctionFromClient", {type: "set", deviceSocketId: this.props.socketId, clientSocketId: socket.id, function:"raveMode", data});
+
+  }
+
+
   render() {
 
     //Kolla alla olika produkter och ge ut rätt modes till dem
@@ -189,8 +202,8 @@ class Modes extends Component {
         <div className="modesWrapper">
               <button onClick={this.startRave}>Rave</button>
               <button onClick={this.startRainbow}>Rainbow</button>
-              <button onClick={this.startRave}>Strobe</button>
-              <button onClick={this.theaterChase}>TheaterChase</button>
+              <button onClick={this.raveMode}>Strobe</button>
+              {/* <button onClick={this.theaterChase}>TheaterChase</button> */}
               <button onClick={this.staticColor}>Static</button>
         </div>
       );
@@ -252,7 +265,6 @@ class DeviceList extends Component {
           {this.state.devices.map((device, idx) => {
             return (<DeviceFragment key={idx} deviceObject={device} />)
           })}
-
       </div>
     );
   }

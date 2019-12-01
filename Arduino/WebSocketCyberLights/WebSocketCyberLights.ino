@@ -10,7 +10,9 @@
   #define DEVICEID      String("1")
   
   #define LED_PIN    5
-  #define LED_COUNT 30
+  #define LED_COUNT 60
+
+  #define SOCKETIOCLIENT_DEBUG(...)
    
   Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
   ESP8266WiFiMulti WiFiMulti;
@@ -20,7 +22,7 @@
   uint32_t low = strip.Color(0, 0, 0); 
   
   //Välj användare Thun = [0], Fors = [1]
-  int user = 1;
+  int user = 0;
   
   //INKLUDERA VÅRA FUNKTIONER
   #include "functionsCyberLight.h"
@@ -130,6 +132,10 @@
       } else if  (function == "staticColor") {
         
         staticColor(payload, length);
+        
+      } else if  (function == "raveMode") {
+        
+        raveMode(payload, length);
         
       }
           

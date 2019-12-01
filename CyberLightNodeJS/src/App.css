@@ -4,6 +4,7 @@
     width: 50%;
     margin: auto;
     position: relative;
+    flex-wrap: wrap;
 }
 
 .hue-picker  {
@@ -17,7 +18,7 @@
     padding: 0 20px;
     padding-bottom: 20px;
     text-align: center;
-    border-radius: 10px;
+    border-radius:6px;
 }
 
 .deviceFragment .title {
@@ -29,7 +30,7 @@
 }
 
 .deviceFragment .ip {
-    color: green;
+    color: #555;
     font-size: 9pt;
     margin-top: 2px;
 }
@@ -57,3 +58,14 @@
     margin-left: 0;
 }
 
+.circle-picker  {
+    margin: auto !important;
+}
+
+.circle-picker span div {
+    margin: 7px !important;
+}
+
+.circle-picker span div span div{
+    margin: 0px !important;
+}

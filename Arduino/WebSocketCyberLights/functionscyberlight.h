@@ -95,9 +95,6 @@
       strip.show();
         
     } else if (doc["type"] == "get")  {
-
-      Serial.println("I hjave comuniaction");
-      
       String socket_id = doc["clientSocketId"];
       String iniBool = doc["iniBool"];
       
