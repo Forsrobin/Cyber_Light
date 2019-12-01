@@ -12,6 +12,16 @@ CyberLight is powerd by node.js with react and the communication is through sock
 
 The main hub is the core server which have the node.js server and hosts the app/webbserver where all the user communication tith the devices will happen.
 
+# Modules
+
+````
+<Color>
+
+Data = {
+  color: ff0000, (What color you want in hex-format)
+}
+````
+
 # Installation
 
 ````
