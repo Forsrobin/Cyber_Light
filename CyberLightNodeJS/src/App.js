@@ -6,7 +6,10 @@ import SocketIOClient from 'socket.io-client';
 
 const socket = SocketIOClient();
 
-class ChangeColor extends Component {
+
+
+
+class Color extends Component {
   constructor(props) {
     super(props);
     this.state = {
@@ -14,39 +17,34 @@ class ChangeColor extends Component {
     };
   }
 
-  changeColor = (color) => {
 
-    var color = color.hex;
+  //When dragging color slider
+  changeColor = (colorInput) => {
+
+    var color = colorInput.hex;
     color = color.substr(1);
 
     var data = {
-      function: "changeColor",
-      dataObject: {
-        color: color.hex,
-      }
+      color,
     }
 
-    socket.emit("useFunctionFromClient", data);
-    this.updateInputColor();
+    socket.emit("useFunctionFromClient", {type: "set", deviceSocketId: this.props.socketId, clientSocketId: socket.id, function:"color", data });
+    this.updateInputColor(0);
 
   }
 
-  setColor = (data) => {
-    this.setState({ currentColor: data });
+  //Ask the device what the current color is 
+  updateInputColor = (iniBool) => {
+    socket.emit("useFunctionFromClient", {type: "get", iniBool, deviceSocketId: this.props.socketId, clientSocketId: socket.id, function:"color" });
   }
 
-  updateInputColor = () => {
-
-    socket.emit("getColorArduinoCall");
-
-    socket.on("returnColorData", (data) => {
-      this.setColor(data);
-    });
-
-  }
-
+  //Ask what color and start the listener for color updates
   componentDidMount() {
-    this.updateInputColor();
+    this.updateInputColor(1);
+
+    socket.on("colorPushDataToClients", (data) => {      
+      this.setState({ currentColor: data["data"]["hex_color"] });
+    });
   }
 
   render() {
@@ -63,42 +61,38 @@ class ToggleLedButton extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      onOffButtonBoolean: 0,
+      onOffButtonBoolean: "1",
       onOffButtonText: "",
     };
   }
 
-
   convertButtonValue = (onOffButtonBoolean) => {
-      if (onOffButtonBoolean === 1) {
-        this.setState({ onOffButtonText: 'On' });
-      } else {
-        this.setState({ onOffButtonText: 'Off' });
-      }
+    if (onOffButtonBoolean === "1") {
+      this.setState({ onOffButtonText: 'On' });
+    } else if(onOffButtonBoolean === "0") {
+      this.setState({ onOffButtonText: 'Off' });
+    }
   }
 
-  getCurrentButtonValue = () => {
-    
-    socket.emit("getCurrentButtonValue");
+  toggleOnOff = () => {
 
-   
+    socket.emit("useFunctionFromClient", {type: "set", deviceSocketId: this.props.socketId, clientSocketId: socket.id, function:"switchOnOff"});
+    this.updateSwitchOnOff(1);
+
   }
 
+  updateSwitchOnOff = (iniBool) => {
+    socket.emit("useFunctionFromClient", {type: "get", iniBool, deviceSocketId: this.props.socketId, clientSocketId: socket.id, function:"switchOnOff" });
+  }
 
   componentDidMount() {
-    this.getCurrentButtonValue();
 
-    socket.on("serverToClientButton", (data) => {
-      this.convertButtonValue(data);
+    this.updateSwitchOnOff(1);
+
+    socket.on("switchOnOffPushDataToClients", (data) => {
+      this.setState({ onOffButtonBoolean: data["data"]["newState"] });
+      this.convertButtonValue(data["data"]["newState"]);
     });
-  }
-
-  toggleOnOff = (e) => {
-    e.preventDefault();
-    
-    socket.emit("clientToServerButton");
-    this.getCurrentButtonValue();
-
   }
 
   render() {
@@ -110,39 +104,51 @@ class ToggleLedButton extends Component {
   }
 }
 
-class Slider extends Component {
+class Brightness extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      sliderValue : "",
+      brightness: "",
     };
+
   }
 
-  getCurrentSliderValue = () => {
-    socket.emit("getCurrentSliderValue");
+ 
+
+  changeBrightness = (iniBool) => {
+    socket.emit("useFunctionFromClient", {type: "get", iniBool, deviceSocketId: this.props.socketId, clientSocketId: socket.id, function:"brightness" });
   }
 
-  
+  updateBrightness = (e) => {
+    e.preventDefault();
+
+    this.setState({brightness: e.target.value})
+
+
+    var data = {
+      brightnessValue: this.state.brightness,
+    }
+
+    console.log(data.brightnessValue);
+    
+
+    socket.emit("useFunctionFromClient", {type: "set", deviceSocketId: this.props.socketId, clientSocketId: socket.id, function:"brightness", data});
+    this.changeBrightness(1);
+
+  }
 
   componentDidMount() {
-    this.getCurrentSliderValue();  
+    this.changeBrightness(0);
 
-    socket.on("serverToClientsSlider", (data) => {
-      this.setState({ sliderValue: data });
+    socket.on("brightnessPushDataToClients", (data) => {      
+      this.setState({ brightness: data["data"]["brightness_value"] });
     });
-  }
-
-  updateSlider = (e) => {
-
-    e.preventDefault();
-    socket.emit("clientToServerSlider", {sliderValue: e.target.value} ); //Update ljusstyrkan på Arduino
-    this.setState({sliderValue: e.target.value})
   }
 
   render() {
     return (
       <div>
-        <input type="range" min="20" max="255" value={this.state.sliderValue} id="myRange" onChange={this.updateSlider}/>
+        <input type="range" min="20" max="255" value={this.state.brightness} id="myRange" onChange={this.updateBrightness}/>
       </div>
     );
   }
@@ -183,9 +189,9 @@ class DeviceFragment extends Component {
         <p className="ip">{this.props.deviceObject.ip}</p>
         <div className="controllButtons">
           <ToggleLedButton socketId={this.props.deviceObject.socketId} />
-          <Slider socketId={this.props.deviceObject.socketId} />
+          <Brightness socketId={this.props.deviceObject.socketId} />
           <Modes socketId={this.props.deviceObject.socketId} />
-          <ChangeColor socketId={this.props.deviceObject.socketId} />
+          <Color socketId={this.props.deviceObject.socketId} />
           
         </div>
       </div>
@@ -237,6 +243,12 @@ class App extends Component {
     this.state = {
       
     };
+  }
+
+  componentDidMount() {
+    socket.on('storeClientInfoGet', (callback) => {
+      socket.emit("storeClientInfo");
+  });
   }
 
   render() {

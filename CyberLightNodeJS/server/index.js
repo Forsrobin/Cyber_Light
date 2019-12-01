@@ -4,15 +4,19 @@ var io = require('socket.io').listen(server);
 
 
 var devices = [];
-var socketList = [];
+var clients = [];
 
 io.on('connection', function(socket){
   
-    socketList.push(socket);
+    
 
     io.sockets.emit('storeDeviceInfoGet');
 
-    
+    io.sockets.emit('storeClientInfoGet');
+
+    socket.on('storeClientInfo', (data) => {
+        clients.push(socket);
+    });
     
     socket.on('storeDeviceInfo', function (data) {
 
@@ -37,65 +41,48 @@ io.on('connection', function(socket){
         
     });
 
+    // Callback device array to client when asked
     socket.on('getConnectedDevices', (callback) => {
         callback(devices);
-        
     });
 
-
+     // Push device array to all clients   
     pushDevicesToAllDevices = () => {
         io.sockets.emit('pushDevicesToAllClients', devices);
         console.log("Pushing device info...");
         
     }
-    
 
-    // ====ToggleLedButton functions==== //
 
-    //Client to device button
-    socket.on("clientToServerButton", () => {
-        io.sockets.emit('serverToDeviceButton');
+
+
+
+    // Client to server communication
+    socket.on("useFunctionFromClient", (data) => {     
+        // Server to device communication 
+        io.to(data["deviceSocketId"]).emit('useFunction', data); 
     });
 
-    //Device to client button
-    socket.on("deviceToServerButton", (data) => {        
-        io.sockets.emit('serverToClientButton', data);
+    // Device to server communication
+    socket.on("useFunctionFromDevice", (data) => {  
+
+        console.log(data);
+
+        if (data['iniBool'] == 0) {
+            for(var i = 0; i < clients.length; i++) {
+                if(clients[i].id != data["clientSocketId"]) {     
+                // Server to client communication            
+                io.to(clients[i].id).emit(data["function"]+'PushDataToClients', data);
+                }
+            }
+        } else {
+            for(var i = 0; i < clients.length; i++) {      
+                // Server to client communication           
+                io.to(clients[i].id).emit(data["function"]+'PushDataToClients', data);
+            }
+        }
+
     });
-    
-    // Get current
-    socket.on("getCurrentButtonValue", () => {
-        io.sockets.emit('getCurrentButtonValueFromDevice');
-    });
-
-
-
-    // ====Slider functions==== //
-
-    // Client to Device
-    socket.on("clientToServerSlider", (data) => {   
-        socket.broadcast.emit('serverToDeviceSlider', data);
-    });
-
-
-    // Device to client
-    socket.on("deviceToServerSlider", (data) => {
-        socket.broadcast.emit('serverToClientsSlider', data);
-    });
-
-    // Device to client
-    socket.on("getCurrentSliderValue", (data) => {
-        socket.broadcast.emit('getCurrentSliderValueFromDevice', data);
-    });
-
-
-
-
-    // =====Change color==== //
-    socket.on("useFunctionFromClient", (data) => {      
-        io.sockets.emit('useFunction', data);
-    });
-
-
 
 
 
@@ -111,7 +98,7 @@ io.on('connection', function(socket){
                 console.log(devices[i].name+" diconnected");
                 
                 devices.splice(i,1);
-                socketList.splice(i,1);
+                clients.splice(i,1);
                 break;
             }
         }
