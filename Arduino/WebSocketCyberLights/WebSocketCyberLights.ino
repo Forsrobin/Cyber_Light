@@ -4,9 +4,13 @@
   #include <Adafruit_NeoPixel.h>
   #include <SocketIoClient.h>
   #include <ArduinoJson.h>
+
+  #define DEVICENAME    String("Led Strip")
+  #define DEVICEGROUP   String("1")
+  #define DEVICEID      String("1")
   
   #define LED_PIN    5
-  #define LED_COUNT 60
+  #define LED_COUNT 30
    
   Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
   ESP8266WiFiMulti WiFiMulti;
@@ -16,7 +20,7 @@
   uint32_t low = strip.Color(0, 0, 0); 
   
   //Välj användare Thun = [0], Fors = [1]
-  int user = 0;
+  int user = 1;
   
   //INKLUDERA VÅRA FUNKTIONER
   #include "functionsCyberLight.h"
@@ -25,11 +29,22 @@
   void setup() {
     
       strip.begin();
+
+      //Startup animation
+      
       strip.setBrightness(brightness);
       for( int i = 0; i<LED_COUNT; i++){
         strip.setPixelColor(i, (r), (g), (b));
-      }       
-      strip.show(); // Initialize all pixels to 'off'
+        strip.show();
+        delay(10);
+      }
+
+      strip.setBrightness(brightness);
+      for( int i = 0; i<LED_COUNT; i++){
+        strip.setPixelColor(i, (0), (0), (0));
+        strip.show();
+        delay(10);
+      }
       
     
       
@@ -53,6 +68,12 @@
       while(WiFiMulti.run() != WL_CONNECTED) {
           delay(100);
       }
+
+      //Sätt strip till grön om du får en koppling till sevrern
+      for( int i = 0; i<LED_COUNT; i++){
+        strip.setPixelColor(i, (0), (255), (0));
+      }
+      strip.show();
   
       if(user == 0) {
         webSocket.begin("192.168.1.213", 5000);
@@ -71,7 +92,7 @@
   //DeviceInfo
   void storeDeviceInfoGet(const char * payload, size_t length) {
       String ipString = WiFi.localIP().toString();
-      webSocket.emit("storeDeviceInfo", ("{\"deviceType\":\"01\", \"customId\":\"01\", \"name\":\"CyberCoo\", \"ip\":\""+ipString+"\"}").c_str());
+      webSocket.emit("storeDeviceInfo", ("{\"deviceType\":\""+DEVICEGROUP+"\", \"customId\":\""+DEVICEID+"\", \"name\":\""+DEVICENAME+"\", \"ip\":\""+ipString+"\"}").c_str());
   }
   
   
@@ -87,11 +108,29 @@
 
   
       if (function == "color") {
+        
         color(payload, length);
+        
       } else if  (function == "switchOnOff") {
+        
         switchOnOff(payload, length);
+        
       } else if  (function == "brightness") {
-        brightness1(payload, length);
+        
+        brightnessChange(payload, length);
+        
+      } else if  (function == "rainbow") {
+        
+        rainbowLoop(payload, length);
+        
+      } else if  (function == "theaterChase") {
+        
+        theaterChase(payload, length);
+        
+      } else if  (function == "staticColor") {
+        
+        staticColor(payload, length);
+        
       }
           
   }

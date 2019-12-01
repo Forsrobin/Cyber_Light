@@ -113,36 +113,31 @@ class Brightness extends Component {
 
   }
 
- 
-
   changeBrightness = (iniBool) => {
     socket.emit("useFunctionFromClient", {type: "get", iniBool, deviceSocketId: this.props.socketId, clientSocketId: socket.id, function:"brightness" });
   }
 
   updateBrightness = (e) => {
+
     e.preventDefault();
-
     this.setState({brightness: e.target.value})
-
-
-    var data = {
-      brightnessValue: this.state.brightness,
-    }
-
-    console.log(data.brightnessValue);
-    
+    var data = { brightnessValue: e.target.value,}
 
     socket.emit("useFunctionFromClient", {type: "set", deviceSocketId: this.props.socketId, clientSocketId: socket.id, function:"brightness", data});
-    this.changeBrightness(1);
+
+    //Efter jag har updaterat så ska jag ändra för alla andra förutom mig själv
+    this.changeBrightness(0);
 
   }
 
   componentDidMount() {
-    this.changeBrightness(0);
+
+    this.changeBrightness(1);
 
     socket.on("brightnessPushDataToClients", (data) => {      
       this.setState({ brightness: data["data"]["brightness_value"] });
     });
+
   }
 
   render() {
@@ -162,14 +157,43 @@ class Modes extends Component {
     };
   }
 
+  staticColor = () => {
+
+    var data = {};
+    socket.emit("useFunctionFromClient", {type: "set", deviceSocketId: this.props.socketId, clientSocketId: socket.id, function:"staticColor", data});
+
+  }
+
+  theaterChase = () => {
+
+    var data = {speed: 50};
+    socket.emit("useFunctionFromClient", {type: "set", deviceSocketId: this.props.socketId, clientSocketId: socket.id, function:"theaterChase", data});
+
+  }
+
+  startRainbow = () => {
+    
+    var data = {speed: 10};
+    socket.emit("useFunctionFromClient", {type: "set", deviceSocketId: this.props.socketId, clientSocketId: socket.id, function:"rainbow", data});
+
+  }
+
   render() {
-    return (
-      <div className="modesWrapper">
-            <button>Rave</button>
-            <button>Rainbow</button>
-            <button>Static</button>
-      </div>
-    );
+
+    //Kolla alla olika produkter och ge ut rätt modes till dem
+    // [1] = Led Strip (Vanlig)
+    // [2] =  Audio Reactive Led Strip (Har suport för att synka till ljud)
+
+
+      return (
+        <div className="modesWrapper">
+              <button onClick={this.startRave}>Rave</button>
+              <button onClick={this.startRainbow}>Rainbow</button>
+              <button onClick={this.startRave}>Strobe</button>
+              <button onClick={this.theaterChase}>TheaterChase</button>
+              <button onClick={this.staticColor}>Static</button>
+        </div>
+      );
   }
 }
 
@@ -192,7 +216,8 @@ class DeviceFragment extends Component {
           <Brightness socketId={this.props.deviceObject.socketId} />
           <Modes socketId={this.props.deviceObject.socketId} />
           <Color socketId={this.props.deviceObject.socketId} />
-          
+
+
         </div>
       </div>
     );

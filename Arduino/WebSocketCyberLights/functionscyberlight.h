@@ -10,8 +10,8 @@
   String hex_color = "#ffffff";
   
   int r = 255;
-  int g = 255;
-  int b = 255;
+  int g = 0;
+  int b = 0;
   
   void color(const char * payload, size_t length) {
   
@@ -30,6 +30,7 @@
         r = number >> 16;
         g = number >> 8 & 0xFF;
         b = number & 0xFF;
+        
         if (isLedOn == true) {
           for( int i = 0; i<LED_COUNT; i++){
             strip.setPixelColor(i, (r), (g), (b));
@@ -79,7 +80,7 @@
     }
   }
 
-   void brightness1(const char * payload, size_t length) {
+   void brightnessChange(const char * payload, size_t length) {
   
     //Deserialize json
     StaticJsonDocument<256> doc;
@@ -90,16 +91,17 @@
       
       brightness = doc["data"]["brightnessValue"];
       
-      Serial.println(brightness);
-      
       strip.setBrightness(brightness);
       strip.show();
         
     } else if (doc["type"] == "get")  {
+
+      Serial.println("I hjave comuniaction");
+      
       String socket_id = doc["clientSocketId"];
       String iniBool = doc["iniBool"];
       
-      webSocket.emit("useFunctionFromDevice", ("{\"function\":\"brightness\", \"clientSocketId\":\""+socket_id+"\", \"iniBool\":\""+iniBool+"\", \"data\":{\"brightness\":\""+brightness+"\"}}").c_str());
+      webSocket.emit("useFunctionFromDevice", ("{\"function\":\"brightness\", \"clientSocketId\":\""+socket_id+"\", \"iniBool\":\""+iniBool+"\", \"data\":{\"brightness_value\":\""+brightness+"\"}}").c_str());
     }
       
   

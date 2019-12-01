@@ -3,6 +3,53 @@
 #ifndef _EFFECTSCYBERLIGHT_H    
 #define _EFFECTSCYBERLIGHT_H  
 
+void rainbowLoop(const char * payload, size_t length) {
+
+  //Deserialize json
+  StaticJsonDocument<256> doc;
+  deserializeJson(doc, payload, length);
+
+  int wait = doc["data"]["speed"];
+  
+  for(long firstPixelHue = 0; firstPixelHue < 3*65536; firstPixelHue += 256) {
+    for(int i=0; i<strip.numPixels(); i++) { // For each pixel in strip...
+      int pixelHue = firstPixelHue + (i * 65536L / strip.numPixels());
+      strip.setPixelColor(i, strip.gamma32(strip.ColorHSV(pixelHue)));
+    }
+    strip.show(); // Update strip with new contents
+    delay(wait);  // Pause for a moment
+  }
+}
+
+void theaterChase(const char * payload, size_t length) {
+
+  //Deserialize json
+  StaticJsonDocument<256> doc;
+  deserializeJson(doc, payload, length);
+
+  int wait = doc["data"]["speed"];
+
+  for(int a=0; a<10; a++) { 
+    for(int b=0; b<3; b++) { 
+      strip.clear();         
+
+      for(int c=b; c<strip.numPixels(); c += 3) {
+        strip.setPixelColor(c, (r), (g), (b));
+      }
+      strip.show(); 
+      delay(wait);  
+    }
+  }
+}
+
+void staticColor(const char * payload, size_t length) {
+
+  for( int i = 0; i<LED_COUNT; i++){
+      strip.setPixelColor(i, (r), (g), (b));
+  }
+  strip.show();
+
+}
 
 
 #endif // _EFFECTSCYBERLIGHT_H    // Put this line at the end of your file.
