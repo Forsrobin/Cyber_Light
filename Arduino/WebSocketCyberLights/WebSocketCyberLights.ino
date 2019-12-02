@@ -5,6 +5,10 @@
   #include <SocketIoClient.h>
   #include <ArduinoJson.h>
 
+  #include <DNSServer.h>
+  #include <ESP8266WebServer.h>
+  #include <WiFiManager.h>  
+
   #define DEVICENAME    String("Led Strip")
   #define DEVICEGROUP   String("1")
   #define DEVICEID      String("1")
@@ -61,15 +65,8 @@
       }
   
       
-      if(user == 0) {
-        WiFiMulti.addAP("Thunberg", "jonte2000");
-      } else {
-        WiFiMulti.addAP("Rosenborg");
-      }
-  
-      while(WiFiMulti.run() != WL_CONNECTED) {
-          delay(100);
-      }
+      WiFiManager wifiManager;
+      wifiManager.autoConnect("AutoConnectAP");
 
       //Sätt strip till grön om du får en koppling till sevrern
       for( int i = 0; i<LED_COUNT; i++){
