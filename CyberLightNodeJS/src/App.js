@@ -163,8 +163,9 @@ class Modes extends Component {
   }
 
   staticColor = () => {
-
+    console.log("Static");
     var data = {};
+    socket.emit("interuptFunction", {deviceSocketId: this.props.socketId, clientSocketId: socket.id});
     socket.emit("useFunctionFromClient", {type: "set", deviceSocketId: this.props.socketId, clientSocketId: socket.id, function:"staticColor", data});
 
   }
@@ -172,20 +173,23 @@ class Modes extends Component {
   theaterChase = () => {
 
     var data = {speed: 50};
+    socket.emit("interuptFunction", {deviceSocketId: this.props.socketId, clientSocketId: socket.id});
     socket.emit("useFunctionFromClient", {type: "set", deviceSocketId: this.props.socketId, clientSocketId: socket.id, function:"theaterChase", data});
 
   }
 
   startRainbow = () => {
+
     
     var data = {speed: 10};
+    socket.emit("interuptFunction", {deviceSocketId: this.props.socketId, clientSocketId: socket.id});
     socket.emit("useFunctionFromClient", {type: "set", deviceSocketId: this.props.socketId, clientSocketId: socket.id, function:"rainbow", data});
 
   }
 
   raveMode = () => {
-    
     var data = {speed: 10};
+    socket.emit("interuptFunction", {deviceSocketId: this.props.socketId, clientSocketId: socket.id});
     socket.emit("useFunctionFromClient", {type: "set", deviceSocketId: this.props.socketId, clientSocketId: socket.id, function:"raveMode", data});
 
   }
@@ -200,7 +204,7 @@ class Modes extends Component {
 
       return (
         <div className="modesWrapper">
-              <button onClick={this.startRave}>Rave</button>
+              <button onClick={this.raveMode}>Rave</button>
               <button onClick={this.startRainbow}>Rainbow</button>
               <button onClick={this.raveMode}>Strobe</button>
               {/* <button onClick={this.theaterChase}>TheaterChase</button> */}

@@ -14,9 +14,7 @@
   #define DEVICEID      String("1")
   
   #define LED_PIN    5
-  #define LED_COUNT 60
-
-  #define SOCKETIOCLIENT_DEBUG(...)
+  #define LED_COUNT 30
    
   Adafruit_NeoPixel strip(LED_COUNT, LED_PIN, NEO_GRB + NEO_KHZ800);
   ESP8266WiFiMulti WiFiMulti;
@@ -24,9 +22,10 @@
   
   boolean isLedOn = true;
   uint32_t low = strip.Color(0, 0, 0); 
+  bool effectRunning = false;
   
   //Välj användare Thun = [0], Fors = [1]
-  int user = 0;
+  int user = 1;
   
   //INKLUDERA VÅRA FUNKTIONER
   #include "functionsCyberLight.h"
@@ -77,13 +76,14 @@
       if(user == 0) {
         webSocket.begin("192.168.1.213", 5000);
       } else {
-        webSocket.begin("192.168.1.132", 5000);
+        webSocket.begin("192.168.1.207", 5000);
       }
   
     
       //DeviceInfo
       webSocket.on("storeDeviceInfoGet", storeDeviceInfoGet);
       webSocket.on("useFunction", useFunction);
+      webSocket.on("interuptFunction", interupFunction);
 
       
   }
@@ -94,6 +94,10 @@
       webSocket.emit("storeDeviceInfo", ("{\"deviceType\":\""+DEVICEGROUP+"\", \"customId\":\""+DEVICEID+"\", \"name\":\""+DEVICENAME+"\", \"ip\":\""+ipString+"\"}").c_str());
   }
   
+  void interupFunction(const char * payload, size_t length) {
+    Serial.println("I recived an interupt!");
+    effectRunning = false;
+  }
   
   //Get display funktion
   void useFunction(const char * payload, size_t length) {

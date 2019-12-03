@@ -54,6 +54,12 @@ io.on('connection', function(socket){
     }
 
 
+    //Interupt function
+    socket.on("interuptFunction", (data) => {
+        console.log("I recived an interupt!");
+        // Server to device communication 
+        io.to(data["deviceSocketId"]).emit('interuptFunction', data); 
+    });
 
 
 

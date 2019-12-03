@@ -3,22 +3,45 @@
 #ifndef _EFFECTSCYBERLIGHT_H    
 #define _EFFECTSCYBERLIGHT_H  
 
-void rainbowLoop(const char * payload, size_t length) {
-
-  //Deserialize json
-  StaticJsonDocument<256> doc;
-  deserializeJson(doc, payload, length);
-
-  int wait = doc["data"]["speed"];
-  
-  for(long firstPixelHue = 0; firstPixelHue < 3*65536; firstPixelHue += 256) {
+void rainbowFunction(int wait, long firstPixelHue) {
     for(int i=0; i<strip.numPixels(); i++) { // For each pixel in strip...
       int pixelHue = firstPixelHue + (i * 65536L / strip.numPixels());
       strip.setPixelColor(i, strip.gamma32(strip.ColorHSV(pixelHue)));
     }
     strip.show(); // Update strip with new contents
     delay(wait);  // Pause for a moment
+}
+
+
+void rainbowLoop(const char * payload, size_t length) {
+
+  //Deserialize json
+  StaticJsonDocument<256> doc;
+  deserializeJson(doc, payload, length);
+  
+  effectRunning = true;
+  
+  int wait = doc["data"]["speed"];
+  long firstPixelHue = 0;
+
+  while(effectRunning == true) {
+
+    webSocket.on("interuptFunction", interupFunction);
+
+    rainbowFunction(wait, firstPixelHue);
+
+    if(firstPixelHue > 3*65536) {
+      firstPixelHue = 0;
+    }
+
+    firstPixelHue += 256;
+
+    yield();
+    
   }
+
+  Serial.println("Stoped the effect!");
+
 }
 
 void theaterChase(const char * payload, size_t length) {
