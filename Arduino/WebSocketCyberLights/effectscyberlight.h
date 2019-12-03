@@ -3,6 +3,14 @@
 #ifndef _EFFECTSCYBERLIGHT_H    
 #define _EFFECTSCYBERLIGHT_H  
 
+void setAll(byte red, byte green, byte blue) {
+  for(int i = 0; i < LED_COUNT; i++ ) {
+    strip.setPixelColor(i, red, green, blue);
+  }
+  strip.show();
+}
+
+
 void rainbowLoop(const char * payload, size_t length) {
 
   //Deserialize json
@@ -76,6 +84,33 @@ void raveMode(const char * payload, size_t length) {
   }
 
 }
+
+void FadeInOut(byte red, byte green, byte blue){
+  float r, g, b;
+     
+  for(int k = 0; k < 256; k=k+1) {
+    r = (k/256.0)*red;
+    g = (k/256.0)*green;
+    b = (k/256.0)*blue;
+    setAll(r,g,b);
+    strip.show();
+  }
+     
+  for(int k = 255; k >= 0; k=k-2) {
+    r = (k/256.0)*red;
+    g = (k/256.0)*green;
+    b = (k/256.0)*blue;
+    setAll(r,g,b);
+    strip.show();
+  }
+}
+
+
+
+
+
+
+
 
 
 #endif // _EFFECTSCYBERLIGHT_H    // Put this line at the end of your file.
