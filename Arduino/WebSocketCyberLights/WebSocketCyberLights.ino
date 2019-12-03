@@ -37,21 +37,8 @@
 
       //Startup animation
       
-      strip.setBrightness(brightness);
-      for( int i = 0; i<LED_COUNT; i++){
-        strip.setPixelColor(i, (r), (g), (b));
-        strip.show();
-        delay(10);
-      }
-
-      strip.setBrightness(brightness);
-      for( int i = 0; i<LED_COUNT; i++){
-        strip.setPixelColor(i, (0), (0), (0));
-        strip.show();
-        delay(10);
-      }
+      FadeInOut(0xff, 0x00, 0x00);
       
-    
       
       Serial.begin(115200);
   
@@ -68,10 +55,7 @@
       wifiManager.autoConnect("AutoConnectAP");
 
       //Sätt strip till grön om du får en koppling till sevrern
-      for( int i = 0; i<LED_COUNT; i++){
-        strip.setPixelColor(i, (0), (255), (0));
-      }
-      strip.show();
+      FadeInOut(0x00, 0xff, 0x00);
   
       if(user == 0) {
         webSocket.begin("192.168.1.213", 5000);
@@ -87,7 +71,9 @@
 
       
   }
-  
+
+
+
   //DeviceInfo
   void storeDeviceInfoGet(const char * payload, size_t length) {
       String ipString = WiFi.localIP().toString();
